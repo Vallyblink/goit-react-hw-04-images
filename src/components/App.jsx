@@ -1,39 +1,30 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import { ToastContainer } from 'react-toastify';
 import SearchBar from './Searchbar/Searchbar';
 import ImageGallery from './ImageGallery/ImageGallery';
 import Modal from './Modal/Modal';
 
-export class App extends Component {
-  state = {
-    imageName: '',
-    showModal: false,
-    selectedImageUrl: ''
+export default function App() {
+  const [imageName, setImagename] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [selectedImageUrl, setSelectedImageUrl] = useState('');
+
+ const handleImageSubmit = (imageName) => {
+   setImagename(imageName);};
+
+ const toggleModal = (imageUrl) => {
+    setShowModal((prevShowModal) => !prevShowModal);
+    setSelectedImageUrl(imageUrl);
   };
-
-  handleImageSubmit = (imageName) => {
-    this.setState({ imageName: imageName });
-  };
-
-  toggleModal = (imageUrl) => {
-    this.setState((prevState) => ({
-      showModal: !prevState.showModal,
-      selectedImageUrl: imageUrl
-    }));
-  };
-
-  render() {
-    const { imageName, showModal, selectedImageUrl } = this.state;
-
     return (
       <div>
         <ToastContainer />
-        <SearchBar onSearch={this.handleImageSubmit} />
-        <ImageGallery imageName={imageName} onSelectImage={this.toggleModal} />
+        <SearchBar onSearch={handleImageSubmit} />
+        <ImageGallery imageName={imageName} onSelectImage={toggleModal} />
         {showModal && (
-          <Modal isOpen={showModal} imageUrl={selectedImageUrl} onClose={this.toggleModal} />
+          <Modal isOpen={showModal} imageUrl={selectedImageUrl} onClose={toggleModal} />
         )}
       </div>
     );
-  }
+  
 }

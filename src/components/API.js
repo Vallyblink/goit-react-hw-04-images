@@ -18,7 +18,7 @@ export const fetchImages = (query, page = 1) => {
     });
 };
 
-export const loadMoreImages = (query, page) => {
+export const fetchMoreImages = (query, page) => {
   const nextPage = page + 1;
   return fetchImages(query, nextPage);
 };

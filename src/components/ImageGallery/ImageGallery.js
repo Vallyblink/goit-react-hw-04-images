@@ -1,75 +1,68 @@
-import React, { Component } from 'react';
+import React, {  useEffect, useState } from 'react';
 import GalleryItem from 'components/ImageGalleryItem/ImageGalleryItem';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { fetchImages, loadMoreImages } from '../API';
+import { fetchImages, fetchMoreImages} from '../API';
 import { ImageGalleryContainer, LoadMoreButton } from './styledGallery';
 import Loader from '../Loader/Loader';
 
-export default class ImageGallery extends Component {
-  state = {
-    images: [],
-    page: 1,
-    isLoading: false
-  };
+export default function ImageGallery({imageName, onSelectImage}) {
+  const [images, setImages] = useState([]);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+ 
+  useEffect(() => {
+    if (imageName) {
+        setImages([]);
+      setPage(1);
+      setLoading(true);
 
-  componentDidUpdate(prevProps, prevState) {
-    if (prevProps.imageName !== this.props.imageName) {
-      const onImageSearch = this.props.imageName;
-      this.setState({ images: [], page: 1, isLoading: true }, () => {
-        this.searchImages(onImageSearch);
-      });
+      searchImages(imageName);
     }
-  }
-
-  searchImages = (query) => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [imageName])
+ 
+  const searchImages = (query) => {
     fetchImages(query)
-      .then((images) => {
-        this.setState({ images, isLoading: false });
+      .then((image) => {
+        setImages(image)
+        setLoading(false)
       })
       .catch((error) => {
-        console.log(error);
         toast.error('We have no picture like this. Try again!');
-        this.setState({ isLoading: false });
+        setLoading(false)
       });
   };
 
-  loadMoreImages = () => {
-    const { imageName } = this.props;
-    const { page } = this.state;
-    this.setState({ isLoading: true });
-    loadMoreImages(imageName, page)
-      .then((images) => {
-        this.setState((prevState) => ({
-          images: [...prevState.images, ...images],
-          page: prevState.page + 1,
-          isLoading: false
-        }));
-      })
-      .catch((error) => {
-        console.log(error);
-        toast.error('Error loading more images');
-        this.setState({ isLoading: false });
-      });
+ const loadMoreImages = () => {
+    setLoading(true);
+  fetchMoreImages(imageName, page)
+    .then((newImages) => {
+      setImages((prevImages) => [...prevImages, ...newImages]);
+      setPage((prevPage) => prevPage + 1);
+      setLoading(false);
+    })
+    .catch((error) => {
+      console.log(error);
+      toast.error('No more pictures, sorry. Search something else');
+      setLoading(false);
+    });
   };
 
-  handleImageClick = (imageUrl) => {
-    this.props.onSelectImage(imageUrl);
+ const handleImageClick = (imageUrl) => {
+    onSelectImage(imageUrl);
   };
-
-  render() {
-    const { images, isLoading } = this.state;
 
     return (
       <ImageGalleryContainer>
-        {isLoading && <Loader />}
+        {loading && <Loader />}
         <ul className="gallery">
-          <GalleryItem images={images} onImageClick={this.handleImageClick} />
+          <GalleryItem images={images} onImageClick={handleImageClick} />
         </ul>
         {images.length > 0 && (
-          <LoadMoreButton onClick={this.loadMoreImages}>Load More</LoadMoreButton>
+          <LoadMoreButton onClick={loadMoreImages}>Load More</LoadMoreButton>
         )}
       </ImageGalleryContainer>
     );
-  }
+  
 }
